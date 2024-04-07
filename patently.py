@@ -4,6 +4,7 @@ import side_bar
 import openai
 import requests
 from io import StringIO
+import scraping
 
 logger = get_logger(__name__)
 
@@ -80,3 +81,6 @@ if my_inv is not None and openai_api_key is not None:
         st.write(response.json()['choices'][0]['message']['content'])
     else:
         print("Error:", response.status_code, response.text)
+
+    # grab searches returned by gpt and grab relevant patents
+    st.write(scraping.grab_patents('"Mobile" AND "smart"'))
