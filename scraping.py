@@ -1,16 +1,13 @@
-import json
 import requests
 from bs4 import BeautifulSoup
 import re
-import os
-import anthropic
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-NUM_PATENTS = 2  # number of results to return
+NUM_PATENTS = 5  # number of results to return
 load_dotenv()
 
 
@@ -45,34 +42,4 @@ def grab_patents(keyphrase):
                 'description': full_description,
                 'claims': claims,
             })
-
-    client = anthropic.Anthropic(
-        api_key=os.environ.get("ANTHROPIC_API_KEY")
-    )
-    message = client.messages.create(
-        model="claude-3-haiku-20240307",
-        max_tokens=2000,
-        system="You are a helpful assistant to a patent attorney that is extremely incisive at delineating the "
-               "different components of a patented invention and only outputs answers in json.",
-        temperature=0,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": """**Business Pitch: Introducing the Next Generation Smartphone with Revolutionary Moving Camera Lenses**
-    
-    Dear Potential Investors,
-    
-    We are thrilled to present our innovative smartphone project aimed at revolutionizing the mobile photography experience – the smartphone with moving camera lenses. In a market inundated with stagnant designs and incremental improvements, our device stands out as a game-changer, offering unparalleled flexibility and creativity to users.
-    
-    **Overview:**""",
-                    }
-                ]
-            }
-        ]
-    )
-    res = message.content[0].text
-    features = json.loads(res.split('<answer>')[-1].split('</answer>')[0].strip())
-    print(features)
+    return data
