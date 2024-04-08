@@ -10,11 +10,11 @@ from selenium.webdriver.common.by import By
 NUM_PATENTS = 5  # number of results to return
 load_dotenv()
 
-
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
+driver = webdriver.Chrome()
 def grab_patents(keyphrase):
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome()
+
     url = f"https://patents.google.com/?q=({keyphrase})"
     driver.get(url)
     wait = WebDriverWait(driver, 15)

@@ -1,15 +1,30 @@
 import streamlit as st
+from dotenv import load_dotenv
 from streamlit.logger import get_logger
 import side_bar
-import openai
 import requests
 from io import StringIO
 import scraping
+from guardrails import Guard
+from guardrails.hub import DetectPromptInjection
+import anthropic
+import csv
+import json
+import os
+import openai
+import compare
+import torch
+from openai import OpenAI
+
+load_dotenv()
 
 logger = get_logger(__name__)
 
 side_bar.sidebar()
 openai_api_key = st.session_state.get("OPENAI_API_KEY")
+client_openai = openai_api_key
+client_anthropic = os.getenv('ANTHROPIC_API_KEY')
+
 if not openai_api_key:
     st.warning(
         "Enter your OpenAI API key in the sidebar. You can get a key at"
@@ -56,12 +71,16 @@ The search terms are intended to guide the user in performing patent searches to
 patents or technologies. This streamlined process is designed to efficiently guide users towards generating actionable search terms, 
 limiting the conversation to a maximum of two follow-up questions after reviewing a document."""
 
+read_data = ""
 # Read the PDF document
 if my_inv is not None and openai_api_key is not None:
     stringio = StringIO(my_inv.getvalue().decode('utf-8'))
     read_data = stringio.read()
-    # MAYBE USE GUARDRAILS HERE?
-    # st.write(read_data)
+
+    guard = Guard().with_prompt_validation(validators=[DetectPromptInjection(
+        pinecone_index="detect-prompt-injection",
+        on_fail="exception",
+    )])
 
     data = {
         "messages": [
@@ -81,13 +100,16 @@ if my_inv is not None and openai_api_key is not None:
     }
     st.subheader("Relevant Boolean searches")
     response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        print("Response from OpenAI:", response.json())
-        print('\n')
-        print(response.json()['choices'][0]['message']['content'])
-        # st.write(response.json()['choices'][0]['message']['content'])
-    else:
-        print("Error:", response.status_code, response.text)
+    # if response.status_code == 200:
+    #     # print("Response from OpenAI:", response.json())
+    #     # print('\n')
+    #     # print(response.json()['choices'][0]['message']['content'])
+    #     # st.write(response.json()['choices'][0]['message']['content'])
+    # else:
+    #     print("Error:", response.status_code, response.text)
+
+    guard.validate(response.json()['choices'][0]['message']['content'])
+
 
     # grab searches returned by gpt and grab 2 relevant patents for each search term
     def extract_characters(text, start_phrase, end_phrase):
@@ -99,6 +121,7 @@ if my_inv is not None and openai_api_key is not None:
             return "One or both phrases not found in the text."
 
         return text[start_index:end_index]
+
 
     start_phrase = "START"
     end_phrase = "END"
@@ -112,4 +135,16 @@ if my_inv is not None and openai_api_key is not None:
     for query in output_list:
         rel_patents += scraping.grab_patents(query)
         print(rel_patents)
+
+    filename = 'data.json'
+
+    # Opening a file in write mode ('w') and dumping the data into the file
+    with open(filename, 'w') as file:
+        json.dump(rel_patents, file, indent=4)
+
     st.write(rel_patents)
+    compare.compare_patents(read_data, rel_patents)
+
+
+
+
