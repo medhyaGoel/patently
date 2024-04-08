@@ -5,8 +5,8 @@ import side_bar
 import requests
 from io import StringIO
 import scraping
-from guardrails import Guard
-from guardrails.hub import DetectPromptInjection
+# from guardrails import Guard
+# from guardrails.hub import DetectPromptInjection
 import anthropic
 import csv
 import json
@@ -137,9 +137,8 @@ if my_inv is not None and openai_api_key is not None:
         json.dump(rel_patents, file, indent=4)
 
     st.write(rel_patents)
-    result = compare.compare_patents(read_data, rel_patents[:1])
-    st.write("All Done!")
+    with st.spinner('Wait for it...'):
+        result = compare.compare_patents(read_data, rel_patents[:1])
+    st.success('Done!') 
+    st.balloons()
     st.download_button("Press to download", result, "features_infringes_converted.csv", "text/csv", key="download-csv")
-
-
-
