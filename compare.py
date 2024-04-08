@@ -187,3 +187,4 @@ def compare_patents(invention, data_json):
     # Convert DataFrame to CSV
     csv_file_path_2 = 'feature_infringes_converted.csv'
     features_df.to_csv(csv_file_path_2, index=False)
+    return features_df.to_csv().encode('utf-8')

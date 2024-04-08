@@ -40,12 +40,6 @@ my_inv = st.file_uploader(
     help="Scanned documents are not supported yet!",
 )
 
-other_inv = st.file_uploader(
-    "Upload a patent to compare with your invention!",
-    type=["txt"],
-    help="Scanned documents are not supported yet!",
-)
-
 client = openai.AsyncClient(api_key=openai_api_key)
 # Your specific set of instructions for the model
 sys_instructions = """As a digital patent attorney, my primary task is to help users articulate and evaluate their 
@@ -77,10 +71,10 @@ if my_inv is not None and openai_api_key is not None:
     stringio = StringIO(my_inv.getvalue().decode('utf-8'))
     read_data = stringio.read()
 
-    guard = Guard().with_prompt_validation(validators=[DetectPromptInjection(
-        pinecone_index="detect-prompt-injection",
-        on_fail="exception",
-    )])
+    # guard = Guard().with_prompt_validation(validators=[DetectPromptInjection(
+    #     pinecone_index="detect-prompt-injection",
+    #     on_fail="exception",
+    # )])
 
     data = {
         "messages": [
@@ -108,7 +102,7 @@ if my_inv is not None and openai_api_key is not None:
     # else:
     #     print("Error:", response.status_code, response.text)
 
-    guard.validate(response.json()['choices'][0]['message']['content'])
+    # guard.validate(response.json()['choices'][0]['message']['content'])
 
 
     # grab searches returned by gpt and grab 2 relevant patents for each search term
@@ -143,8 +137,9 @@ if my_inv is not None and openai_api_key is not None:
         json.dump(rel_patents, file, indent=4)
 
     st.write(rel_patents)
-    compare.compare_patents(read_data, rel_patents)
-
+    result = compare.compare_patents(read_data, rel_patents[:1])
+    st.write("All Done!")
+    st.download_button("Press to download", result, "features_infringes_converted.csv", "text/csv", key="download-csv")
 
 
 
