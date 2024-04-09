@@ -11,4 +11,8 @@ How to use:
 2. Run "streamlit run patently.py" in terminal
 
 Basic tech stack:
-- Claude AI, GPT-4, Streamlit, Python, Selenium
+- Claude AI
+- GPT-4
+- Hosted on Streamlit
+- Python
+- Selenium
