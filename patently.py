@@ -7,14 +7,9 @@ from io import StringIO
 import scraping
 # from guardrails import Guard
 # from guardrails.hub import DetectPromptInjection
-import anthropic
-import csv
 import json
-import os
 import openai
 import compare
-import torch
-from openai import OpenAI
 
 load_dotenv()
 
@@ -22,14 +17,20 @@ logger = get_logger(__name__)
 
 side_bar.sidebar()
 openai_api_key = st.session_state.get("OPENAI_API_KEY")
-client_openai = openai_api_key
-client_anthropic = os.getenv('ANTHROPIC_API_KEY')
 
 if not openai_api_key:
     st.warning(
         "Enter your OpenAI API key in the sidebar. You can get a key at"
         " https://platform.openai.com/account/api-keys."
     )
+
+anthropic_api_key = st.session_state.get("ANTHROPIC_API_KEY")
+if not anthropic_api_key:
+    st.warning(
+        "Enter your Anthropic API key in the sidebar. You can get a key at"
+        " https://console.anthropic.com/login?returnTo=%2F."
+    )
+
 
 st.title('patently')
 st.subheader('Figure out whether your invention is already out there.')
@@ -67,7 +68,7 @@ limiting the conversation to a maximum of two follow-up questions after reviewin
 
 read_data = ""
 # Read the PDF document
-if my_inv is not None and openai_api_key is not None:
+if my_inv is not None and openai_api_key is not None and anthropic_api_key is not None:
     stringio = StringIO(my_inv.getvalue().decode('utf-8'))
     read_data = stringio.read()
 
@@ -94,16 +95,16 @@ if my_inv is not None and openai_api_key is not None:
     }
     st.subheader("Relevant Boolean searches")
     response = requests.post(url, headers=headers, json=data)
-    # if response.status_code == 200:
-    #     # print("Response from OpenAI:", response.json())
-    #     # print('\n')
-    #     # print(response.json()['choices'][0]['message']['content'])
-    #     # st.write(response.json()['choices'][0]['message']['content'])
-    # else:
-    #     print("Error:", response.status_code, response.text)
+    if response.status_code == 200:
+        # print("Response from OpenAI:", response.json())
+        print('\n')
+        # print(response.json()['choices'][0]['message']['content'])
+        # st.write(response.json()['choices'][0]['message']['content'])
+    else:
+        print("Error:", response.status_code, response.text)
+
 
     # guard.validate(response.json()['choices'][0]['message']['content'])
-
 
     # grab searches returned by gpt and grab 2 relevant patents for each search term
     def extract_characters(text, start_phrase, end_phrase):
@@ -126,19 +127,22 @@ if my_inv is not None and openai_api_key is not None:
     st.write(extracted_text)
 
     rel_patents = []
-    for query in output_list:
-        rel_patents += scraping.grab_patents(query)
-        print(rel_patents)
 
-    filename = 'data.json'
+    with st.spinner('Finding relevant patents'):
+        for query in output_list:
+            rel_patents += scraping.grab_patents(query)
+            print(rel_patents)
 
-    # Opening a file in write mode ('w') and dumping the data into the file
-    with open(filename, 'w') as file:
-        json.dump(rel_patents, file, indent=4)
+        filename = 'data.json'
 
-    st.write(rel_patents)
+        # Opening a file in write mode ('w') and dumping the data into the file
+        with open(filename, 'w') as file:
+            json.dump(rel_patents, file, indent=4)
+
+        st.write(rel_patents)
+    st.success('Found patents! Onto the comparisons...')
     with st.spinner('Wait for it...'):
         result = compare.compare_patents(read_data, rel_patents[:1])
-    st.success('Done!') 
+    st.success('Done!')
     st.balloons()
     st.download_button("Press to download", result, "features_infringes_converted.csv", "text/csv", key="download-csv")

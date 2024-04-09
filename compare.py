@@ -1,11 +1,18 @@
 import anthropic
 import json
+import streamlit as st
 import os
 import pandas as pd
 import openai
+from dotenv import load_dotenv
+
+load_dotenv()
+anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+client_anthropic = anthropic.Anthropic(api_key=anthropic_api_key)
 
 def compare_patents(invention, data_json):
-
+    openai_api_key = st.session_state.get("OPENAI_API_KEY")
+    client_openai = openai.OpenAI(api_key=openai_api_key)
     prompt_claim_breakdown = """
     Your task is to break down the following patent claim into the individual features.
     Output your answer into list of json objects, with each object corresponding to the independent features.

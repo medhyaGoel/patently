@@ -9,7 +9,7 @@ def sidebar():
     with st.sidebar:
         st.markdown(
             "## How to use\n"
-            "1. Enter your [OpenAI API key](https://platform.openai.com/account/api-keys) below🔑\n"  # noqa: E501
+            "1. Enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and [Anthropic key](https://console.anthropic.com/login?returnTo=%2F) below🔑\n"  # noqa: E501
             "2. Upload a pdf, docx, or txt file📄 description of your invention\n"
             "3. Upload a pdf, docx, or txt file📄 of an existing patent\n"
             "4. patently will compare and contrast the documents and help you understand if the patent poses "
@@ -25,3 +25,14 @@ def sidebar():
         )
 
         st.session_state["OPENAI_API_KEY"] = api_key_input
+        api_key_input = st.text_input(
+            "Anthropic API Key",
+            type="password",
+            placeholder="Paste your Anthropic API key here",
+            help="You can get your API key from https://console.anthropic.com/login?returnTo=%2F.",  # noqa: E501
+            value=os.environ.get("ANTHROPIC_API_KEY", None)
+            or st.session_state.get("ANTHROPIC_API_KEY", ""),
+        )
+
+        st.session_state["ANTHROPIC_API_KEY"] = api_key_input
+

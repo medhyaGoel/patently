@@ -13,8 +13,9 @@ load_dotenv()
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')
 driver = webdriver.Chrome()
-def grab_patents(keyphrase):
 
+
+def grab_patents(keyphrase):
     url = f"https://patents.google.com/?q=({keyphrase})"
     driver.get(url)
     wait = WebDriverWait(driver, 15)
