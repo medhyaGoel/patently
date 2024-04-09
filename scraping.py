@@ -14,8 +14,8 @@ load_dotenv()
 
 opts = webdriver.ChromeOptions()
 opts.add_argument('--headless')
-driver = webdriver.Chrome()
-# driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
+# driver = webdriver.Chrome()
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
 
 
 def grab_patents(keyphrase):
