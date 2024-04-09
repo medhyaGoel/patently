@@ -10,9 +10,9 @@ from selenium.webdriver.common.by import By
 NUM_PATENTS = 2  # number of results to return
 load_dotenv()
 
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')
-driver = webdriver.Chrome()
+opts = webdriver.ChromeOptions()
+opts.add_argument('--headless')
+driver = webdriver.Chrome(options=opts)
 
 
 def grab_patents(keyphrase):
