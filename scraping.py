@@ -6,14 +6,16 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver import ChromeService
 
 NUM_PATENTS = 2  # number of results to return
 load_dotenv()
 
 opts = webdriver.ChromeOptions()
 opts.add_argument('--headless')
-driver = webdriver.Chrome()
-# driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
+# driver = webdriver.Chrome()
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
 
 
 def grab_patents(keyphrase):
